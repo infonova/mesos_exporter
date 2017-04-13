@@ -177,6 +177,13 @@ func newMasterCollector(httpClient *httpClient) prometheus.Collector {
 			finished, ok := m["master/tasks_finished"]
 			killed, ok := m["master/tasks_killed"]
 			lost, ok := m["master/tasks_lost"]
+
+			killing, ok := m["master/tasks_killing"]
+			running, ok := m["master/tasks_running"]
+			staging, ok := m["master/tasks_staging"]
+			starting, ok := m["master/tasks_starting"]
+			unreachable, ok := m["master/tasks_unreachable"]
+
 			if !ok {
 				return notFoundInMap
 			}
@@ -185,6 +192,11 @@ func newMasterCollector(httpClient *httpClient) prometheus.Collector {
 			c.(*settableCounterVec).Set(finished, "finished")
 			c.(*settableCounterVec).Set(killed, "killed")
 			c.(*settableCounterVec).Set(lost, "lost")
+			c.(*settableCounterVec).Set(killing, "killing")
+			c.(*settableCounterVec).Set(running, "running")
+			c.(*settableCounterVec).Set(staging, "staging")
+			c.(*settableCounterVec).Set(starting, "starting")
+			c.(*settableCounterVec).Set(unreachable, "unreachable")
 			return nil
 		},
 		counter("master", "task_states_current", "Current number of tasks by state.", "state"): func(m metricMap, c prometheus.Collector) error {
