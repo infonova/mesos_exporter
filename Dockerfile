@@ -7,8 +7,12 @@ RUN addgroup exporter \
 
 COPY ./ /mesos_exporter
 WORKDIR /mesos_exporter
-RUN apk --no-cache add --update git && go get -d && go build && apk del git pcre expat libcurl libssh2
+RUN apk --update add --virtual build-deps git \
+&& go get -d \
+&& go build \
+&& apk del --purge build-deps \
+&& rm -rf /go/bin /go/pkg /var/cache/apk/*
 
 USER exporter
 
-ENTRYPOINT [ "/bin/mesos-exporter" ]
+ENTRYPOINT [ "/mesos_exporter/mesos_exporter" ]
