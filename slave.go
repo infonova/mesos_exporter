@@ -145,7 +145,6 @@ func newSlaveCollector(httpClient *httpClient) prometheus.Collector {
 
 		// Slave stats about tasks
 		counter("slave", "task_states_exit_total", "Total number of tasks processed by exit state.", "state"): func(m metricMap, c prometheus.Collector) error {
-			errored, ok := m["slave/tasks_error"]
 			failed, ok := m["slave/tasks_failed"]
 			finished, ok := m["slave/tasks_finished"]
 			killed, ok := m["slave/tasks_killed"]
@@ -153,7 +152,6 @@ func newSlaveCollector(httpClient *httpClient) prometheus.Collector {
 			if !ok {
 				return notFoundInMap
 			}
-			c.(*settableCounterVec).Set(errored, "errored")
 			c.(*settableCounterVec).Set(failed, "failed")
 			c.(*settableCounterVec).Set(finished, "finished")
 			c.(*settableCounterVec).Set(killed, "killed")
