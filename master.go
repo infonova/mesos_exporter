@@ -177,10 +177,11 @@ func newMasterCollector(httpClient *httpClient) prometheus.Collector {
 			finished, ok := m["master/tasks_finished"]
 			killed, ok := m["master/tasks_killed"]
 			lost, ok := m["master/tasks_lost"]
-			killing,     ok := m["master/tasks_killing"]
-			running,     ok := m["master/tasks_running"]
-			staging,     ok := m["master/tasks_staging"]
-			starting,    ok := m["master/tasks_starting"]
+
+			killing, ok := m["master/tasks_killing"]
+			running, ok := m["master/tasks_running"]
+			staging, ok := m["master/tasks_staging"]
+			starting, ok := m["master/tasks_starting"]
 			unreachable, ok := m["master/tasks_unreachable"]
 
 			if !ok {
