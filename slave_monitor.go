@@ -46,89 +46,87 @@ type (
 
 func newSlaveMonitorCollector(httpClient *httpClient) prometheus.Collector {
 	labels := []string{"id", "framework_id", "source"}
+	metrics := map[*prometheus.Desc]metric{
+		// CPU
+		prometheus.NewDesc(
+			"mesos_slave_stats_cpus_limit",
+			"Current limit of CPUs for task",
+			labels, nil,
+		): {prometheus.GaugeValue, func(s *statistics) float64 { return s.CpusLimit }},
+		prometheus.NewDesc(
+			"mesos_slave_stats_cpu_system_seconds_total",
+			"Total system CPU seconds",
+			labels, nil,
+		): {prometheus.CounterValue, func(s *statistics) float64 { return s.CpusSystemTimeSecs }},
+		prometheus.NewDesc(
+			"mesos_slave_stats_cpu_user_seconds_total",
+			"Total user CPU seconds",
+			labels, nil,
+		): {prometheus.CounterValue, func(s *statistics) float64 { return s.CpusUserTimeSecs }},
+		prometheus.NewDesc(
+			"mesos_slave_stats_cpu_throttled_seconds_total",
+			"Total time CPU was throttled",
+			labels, nil,
+		): {prometheus.CounterValue, func(s *statistics) float64 { return s.CpusThrottledTimeSecs }},
 
-	return &slaveCollector{
-		httpClient: httpClient,
-		metrics: map[*prometheus.Desc]metric{
-			// CPU
-			prometheus.NewDesc(
-				"cpus_limit",
-				"Current limit of CPUs for task",
-				labels, nil,
-			): metric{prometheus.GaugeValue, func(s *statistics) float64 { return s.CpusLimit }},
-			prometheus.NewDesc(
-				"cpu_system_seconds_total",
-				"Total system CPU seconds",
-				labels, nil,
-			): metric{prometheus.CounterValue, func(s *statistics) float64 { return s.CpusSystemTimeSecs }},
-			prometheus.NewDesc(
-				"cpu_user_seconds_total",
-				"Total user CPU seconds",
-				labels, nil,
-			): metric{prometheus.CounterValue, func(s *statistics) float64 { return s.CpusUserTimeSecs }},
-			prometheus.NewDesc(
-				"cpu_throttled_seconds_total",
-				"Total time CPU was throttled",
-				labels, nil,
-			): metric{prometheus.CounterValue, func(s *statistics) float64 { return s.CpusThrottledTimeSecs }},
+		// Memory
+		prometheus.NewDesc(
+			"mesos_slave_stats_mem_limit_bytes",
+			"Current memory limit in bytes",
+			labels, nil,
+		): {prometheus.CounterValue, func(s *statistics) float64 { return s.MemLimitBytes }},
+		prometheus.NewDesc(
+			"mesos_slave_stats_mem_rss_bytes",
+			"Current rss memory usage",
+			labels, nil,
+		): {prometheus.CounterValue, func(s *statistics) float64 { return s.MemRssBytes }},
 
-			// Memory
-			prometheus.NewDesc(
-				"mem_limit_bytes",
-				"Current memory limit in bytes",
-				labels, nil,
-			): metric{prometheus.CounterValue, func(s *statistics) float64 { return s.MemLimitBytes }},
-			prometheus.NewDesc(
-				"mem_rss_bytes",
-				"Current rss memory usage",
-				labels, nil,
-			): metric{prometheus.CounterValue, func(s *statistics) float64 { return s.MemRssBytes }},
-
-			// Network
-			// - RX
-			prometheus.NewDesc(
-				"network_receive_bytes_total",
-				"Total bytes received",
-				labels, nil,
-			): metric{prometheus.CounterValue, func(s *statistics) float64 { return s.NetRxBytes }},
-			prometheus.NewDesc(
-				"network_receive_dropped_total",
-				"Total packets dropped while receiving",
-				labels, nil,
-			): metric{prometheus.CounterValue, func(s *statistics) float64 { return s.NetRxDropped }},
-			prometheus.NewDesc(
-				"network_receive_errors_total",
-				"Total errors while receiving",
-				labels, nil,
-			): metric{prometheus.CounterValue, func(s *statistics) float64 { return s.NetRxBytes }},
-			prometheus.NewDesc(
-				"network_receive_packets_total",
-				"Total packets received",
-				labels, nil,
-			): metric{prometheus.CounterValue, func(s *statistics) float64 { return s.NetRxBytes }},
-			// - TX
-			prometheus.NewDesc(
-				"network_transmit_bytes_total",
-				"Total bytes transmitted",
-				labels, nil,
-			): metric{prometheus.CounterValue, func(s *statistics) float64 { return s.NetTxBytes }},
-			prometheus.NewDesc(
-				"network_transmit_dropped_total",
-				"Total packets dropped while transmitting",
-				labels, nil,
-			): metric{prometheus.CounterValue, func(s *statistics) float64 { return s.NetTxDropped }},
-			prometheus.NewDesc(
-				"network_transmit_errors_total",
-				"Total errors while transmitting",
-				labels, nil,
-			): metric{prometheus.CounterValue, func(s *statistics) float64 { return s.NetTxBytes }},
-			prometheus.NewDesc(
-				"network_transmit_packets_total",
-				"Total packets transmitted",
-				labels, nil,
-			): metric{prometheus.CounterValue, func(s *statistics) float64 { return s.NetTxBytes }},
-		},
+		// Network
+		// - RX
+		prometheus.NewDesc(
+			"mesos_slave_stats_network_receive_bytes_total",
+			"Total bytes received",
+			labels, nil,
+		): {prometheus.CounterValue, func(s *statistics) float64 { return s.NetRxBytes }},
+		prometheus.NewDesc(
+			"mesos_slave_stats_network_receive_dropped_total",
+			"Total packets dropped while receiving",
+			labels, nil,
+		): {prometheus.CounterValue, func(s *statistics) float64 { return s.NetRxDropped }},
+		prometheus.NewDesc(
+			"mesos_slave_stats_network_receive_errors_total",
+			"Total errors while receiving",
+			labels, nil,
+		): {prometheus.CounterValue, func(s *statistics) float64 { return s.NetRxBytes }},
+		prometheus.NewDesc(
+			"mesos_slave_stats_network_receive_packets_total",
+			"Total packets received",
+			labels, nil,
+		): {prometheus.CounterValue, func(s *statistics) float64 { return s.NetRxBytes }},
+		// - TX
+		prometheus.NewDesc(
+			"mesos_slave_stats_network_transmit_bytes_total",
+			"Total bytes transmitted",
+			labels, nil,
+		): {prometheus.CounterValue, func(s *statistics) float64 { return s.NetTxBytes }},
+		prometheus.NewDesc(
+			"mesos_slave_stats_network_transmit_dropped_total",
+			"Total packets dropped while transmitting",
+			labels, nil,
+		): {prometheus.CounterValue, func(s *statistics) float64 { return s.NetTxDropped }},
+		prometheus.NewDesc(
+			"mesos_slave_stats_network_transmit_errors_total",
+			"Total errors while transmitting",
+			labels, nil,
+		): {prometheus.CounterValue, func(s *statistics) float64 { return s.NetTxBytes }},
+		prometheus.NewDesc(
+			"mesos_slave_stats_network_transmit_packets_total",
+			"Total packets transmitted",
+			labels, nil,
+		): {prometheus.CounterValue, func(s *statistics) float64 { return s.NetTxBytes }},
 	}
+
+	return &slaveCollector{httpClient, metrics}
 }
 
 func (c *slaveCollector) Collect(ch chan<- prometheus.Metric) {
