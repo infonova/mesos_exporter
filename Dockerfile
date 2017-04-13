@@ -11,4 +11,4 @@ RUN apk --no-cache add --update git && go get -d && go build && apk del git pcre
 
 USER exporter
 
-ENTRYPOINT [ "/bin/mesos-exporter" ]
+ENTRYPOINT [ "/mesos_exporter/mesos_exporter" ]
