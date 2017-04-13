@@ -1,5 +1,5 @@
 # Prometheus Mesos Exporter
-Exporter for Mesos master and agent metrics
+Exporter for Mesos master and agent metrics for __Mesos > 1.0__
 
 ## Installing
 ```sh
@@ -22,6 +22,8 @@ Usage of mesos-exporter:
        	Expose metrics from slave running on this URL
   -timeout duration
        	Master polling timeout (default 5s)
+  -exportedTaskLabels
+        Comma-separated list of task labels to include in the task_labels metric       	
 ```
 
 Usually you would run one exporter with `-master` pointing to the current
