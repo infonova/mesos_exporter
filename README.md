@@ -1,10 +1,6 @@
 # Prometheus Mesos Exporter
 Exporter for Mesos master and agent metrics for __Mesos > 1.0__
 
-## Installing
-```sh
-$ go get github.com/mesosphere/mesos-exporter
-```
 
 ## Using
 The Mesos Exporter can either expose cluster wide metrics from a master or task
