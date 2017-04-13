@@ -27,9 +27,8 @@ Usage of mesos-exporter:
 ```
 
 Usually you would run one exporter with `-master` pointing to the current
-leader and one exporter for each slave with `-slave` pointing to it. In
-a default Mesos / DC/OS setup, you should be able to run the mesos-exporter
-like this:
+leader and one exporter for each slave with `-slave` pointing to it. You should 
+be able to run the mesos-exporter like this:
 
-- Master: `mesos-exporter -master http://leader.mesos:5050`
-- Agent: `mesos-exporter -slave http://localhost:5051`
+- Master: `mesos-exporter -master http://mesos-master.local:5050`
+- Agent: `mesos-exporter -slave http://mesos-slave.local:5051`
