@@ -141,7 +141,7 @@ func newMasterCollector(httpClient *httpClient) prometheus.Collector {
 		},
 
 		// Master stats about frameworks
-		gauge("master", "frameworks_state", "Current number of frames known to the master per connection and registration state.", "state"): func(m metricMap, c prometheus.Collector) error {
+		gauge("master", "frameworks", "Current number of frames known to the master per connection and registration state.", "state"): func(m metricMap, c prometheus.Collector) error {
 			active, ok := m["master/frameworks_active"]
 			connected, ok := m["master/frameworks_connected"]
 			inactive, ok := m["master/frameworks_inactive"]
