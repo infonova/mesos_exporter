@@ -305,6 +305,47 @@ func newMasterCollector(httpClient *httpClient) prometheus.Collector {
 			c.(*prometheus.GaugeVec).WithLabelValues("write").Set(read_ms)
 			return nil
 		},
+		gauge("master", "system_load", "Load average on this master", "load"): func(m metricMap, c prometheus.Collector) error {
+
+			load_15min, ok := m["system/load_15min"]
+			load_5min, ok := m["system/load_5min"]
+			load_1min, ok := m["system/load_1min"]
+
+			if !ok {
+				return notFoundInMap
+
+			}
+			c.(*prometheus.GaugeVec).WithLabelValues("15min").Set(load_15min)
+			c.(*prometheus.GaugeVec).WithLabelValues("5min").Set(load_5min)
+			c.(*prometheus.GaugeVec).WithLabelValues("1min").Set(load_1min)
+			return nil
+		},
+		gauge("master", "system_mem_bytes", "Memory in bytes on this master", "type"): func(m metricMap, c prometheus.Collector) error {
+
+			mem_free_bytes, ok := m["system/mem_free_bytes"]
+			mem_total_bytes, ok := m["system/mem_total_bytes"]
+
+			if !ok {
+				return notFoundInMap
+
+			}
+			c.(*prometheus.GaugeVec).WithLabelValues("free").Set(mem_free_bytes)
+			c.(*prometheus.GaugeVec).WithLabelValues("total").Set(mem_total_bytes)
+			return nil
+		},
+		prometheus.NewGauge(prometheus.GaugeOpts{
+			Namespace: "mesos",
+			Subsystem: "master",
+			Name:      "system_cpus_total",
+			Help:      "Number of CPUs available in this master node",
+		}): func(m metricMap, c prometheus.Collector) error {
+			cpus_total, ok := m["system/cpus_total"]
+			if !ok {
+				return notFoundInMap
+			}
+			c.(prometheus.Gauge).Set(cpus_total)
+			return nil
+		},
 	}
 	return newMetricCollector(httpClient, metrics)
 }
