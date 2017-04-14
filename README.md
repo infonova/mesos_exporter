@@ -25,5 +25,5 @@ Usage of mesos-exporter:
 ## Docker 
 If you use docker, start the container like this (copy and paste code)
 ```
-docker run  infonova/prometheus_mesos_exporter:latest -master http://mesos-master.local:5050
+docker run  infonova/prometheus_mesos_exporter:1.0 -master http://mesos-master.local:5050
 ```
