@@ -284,12 +284,12 @@ func newMasterCollector(httpClient *httpClient) prometheus.Collector {
 
 			}
 
-			c.(*prometheus.GaugeVec).WithLabelValues("p50").Set(p50)
-			c.(*prometheus.GaugeVec).WithLabelValues("p90").Set(p90)
-			c.(*prometheus.GaugeVec).WithLabelValues("p95").Set(p95)
-			c.(*prometheus.GaugeVec).WithLabelValues("p99").Set(p99)
-			c.(*prometheus.GaugeVec).WithLabelValues("p999").Set(p999)
-			c.(*prometheus.GaugeVec).WithLabelValues("p9999").Set(p9999)
+			c.(*prometheus.GaugeVec).WithLabelValues("0.50").Set(p50)
+			c.(*prometheus.GaugeVec).WithLabelValues("0.90").Set(p90)
+			c.(*prometheus.GaugeVec).WithLabelValues("0.95").Set(p95)
+			c.(*prometheus.GaugeVec).WithLabelValues("0.99").Set(p99)
+			c.(*prometheus.GaugeVec).WithLabelValues("0.999").Set(p999)
+			c.(*prometheus.GaugeVec).WithLabelValues("0.9999").Set(p9999)
 			return nil
 		},
 		gauge("master", "registrar_state_store_ms_duration", "Registrar rea/write latency", "iotype"): func(m metricMap, c prometheus.Collector) error {
