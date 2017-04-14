@@ -124,7 +124,7 @@ func newMasterCollector(httpClient *httpClient) prometheus.Collector {
 			c.(*settableCounterVec).Set(removals-completed, "died")
 			return nil
 		},
-		gauge("master", "slaves_state", "Current number of slaves known to the master per connection and registration state.", "state"): func(m metricMap, c prometheus.Collector) error {
+		gauge("master", "slaves", "Current number of slaves known to the master per state.", "state"): func(m metricMap, c prometheus.Collector) error {
 			active, ok := m["master/slaves_active"]
 			inactive, ok := m["master/slaves_inactive"]
 			disconnected, ok := m["master/slaves_disconnected"]
@@ -270,15 +270,39 @@ func newMasterCollector(httpClient *httpClient) prometheus.Collector {
 			c.(*prometheus.GaugeVec).WithLabelValues("dispatches").Set(dispatches)
 			return nil
 		},
+		gauge("master", "registrar_state_store_ms_history", "Registrar write latency historgram", "quantile"): func(m metricMap, c prometheus.Collector) error {
 
-		// Master stats about registrar
-		prometheus.NewHistogram(prometheus.HistogramOpts{
-			Namespace: "mesos",
-			Subsystem: "master",
-			Name:      "state_store_seconds",
-			Help:      "Registry write latency in seconds",
-		}): func(m metricMap, c prometheus.Collector) error {
-			//	c.(*prometheus.Histogram).Buckets //FIXME
+			p50, ok := m["registrar/state_store_ms/p50"]
+			p90, ok := m["registrar/state_store_ms/p90"]
+			p95, ok := m["registrar/state_store_ms/p95"]
+			p99, ok := m["registrar/state_store_ms/p99"]
+			p999, ok := m["registrar/state_store_ms/p999"]
+			p9999, ok := m["registrar/state_store_ms/p9999"]
+
+			if !ok {
+				return notFoundInMap
+
+			}
+
+			c.(*prometheus.GaugeVec).WithLabelValues("p50").Set(p50)
+			c.(*prometheus.GaugeVec).WithLabelValues("p90").Set(p90)
+			c.(*prometheus.GaugeVec).WithLabelValues("p95").Set(p95)
+			c.(*prometheus.GaugeVec).WithLabelValues("p99").Set(p99)
+			c.(*prometheus.GaugeVec).WithLabelValues("p999").Set(p999)
+			c.(*prometheus.GaugeVec).WithLabelValues("p9999").Set(p9999)
+			return nil
+		},
+		gauge("master", "registrar_state_store_ms_duration", "Registrar rea/write latency", "iotype"): func(m metricMap, c prometheus.Collector) error {
+
+			store_ms, ok := m["registrar/state_store_ms"]
+			read_ms, ok := m["registrar/state_fetch_ms"]
+
+			if !ok {
+				return notFoundInMap
+
+			}
+			c.(*prometheus.GaugeVec).WithLabelValues("read").Set(store_ms)
+			c.(*prometheus.GaugeVec).WithLabelValues("write").Set(read_ms)
 			return nil
 		},
 	}
