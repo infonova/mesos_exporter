@@ -23,7 +23,12 @@ Usage of mesos-exporter:
   -timeout duration
        	Master polling timeout (default 5s)
   -exportedTaskLabels
-        Comma-separated list of task labels to include in the task_labels metric       	
+       	Comma-separated list of task labels to whitelist for inclusion in the 
+       	task_labels metric.        
+  -trustedRedirects
+        Comma-separated list of trusted hosts (ip addresses, host names) 
+        where metrics requests can be redirected. Only valid on mesos masters
+
 ```
 
 Usually you would run one exporter with `-master` pointing to the current
@@ -32,3 +37,9 @@ be able to run the mesos-exporter like this:
 
 - Master: `mesos-exporter -master http://mesos-master.local:5050`
 - Agent: `mesos-exporter -slave http://mesos-slave.local:5051`
+
+### Example /w docker run
+
+```
+docker run  prometheus_mesos_exporter -master http://mesos-master.local:5050
+```
