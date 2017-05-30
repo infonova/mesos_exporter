@@ -19,13 +19,18 @@ Usage of mesos-exporter:
   -timeout duration
        	Master polling timeout (default 5s)
   -exportedTaskLabels
-        Comma-separated list of task labels to include in the task_labels metric
+        Comma-separated list of task labels to whitelist for inclusion in the task_labels metric.        
   -trustedRedirects
-        Comma-separated list of trusted hosts (ip addresses, host names) where metrics requests can be redirected
+        Comma-separated list of trusted hosts (ip addresses, host names) 
+        where metrics requests can be redirected. Only valid on mesos masters
+        
 ```
 
 ## Docker 
 If you use docker, start the container like this (copy and paste code)
 ```
-docker run  infonova/prometheus_mesos_exporter:1.0 -master http://mesos-master.local:5050
+docker run \
+    infonova/prometheus_mesos_exporter:1.0 \
+    -master http://mesos-master.local:5050 
+    
 ```
