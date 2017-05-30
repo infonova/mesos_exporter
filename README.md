@@ -19,7 +19,9 @@ Usage of mesos-exporter:
   -timeout duration
        	Master polling timeout (default 5s)
   -exportedTaskLabels
-        Comma-separated list of task labels to include in the task_labels metric       	
+        Comma-separated list of task labels to include in the task_labels metric
+  -trustedRedirects
+        Comma-separated list of trusted hosts (ip addresses, host names) where metrics requests can be redirected
 ```
 
 ## Docker 

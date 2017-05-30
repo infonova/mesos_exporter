@@ -40,14 +40,38 @@ func getX509CertPool(pemFiles []string) *x509.CertPool {
 	return pool
 }
 
-func mkHttpClient(url string, timeout time.Duration, auth authInfo, certPool *x509.CertPool) *httpClient {
+func getTrustedRedirectsMap(trustedRedirects []string) map[string]bool {
+	trustedRedirectsMap := make(map[string]bool)
+	for _, r := range trustedRedirects {
+		trustedRedirectsMap[r] = true
+	}
+	return trustedRedirectsMap
+}
+
+func mkHttpClient(url string, timeout time.Duration, auth authInfo, certPool *x509.CertPool, trustedRedirects map[string]bool) *httpClient {
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{RootCAs: certPool},
 	}
 	return &httpClient{
-		http.Client{Timeout: timeout, Transport: transport},
+		http.Client{
+			Timeout: timeout,
+			Transport: transport,
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				redirectHost := req.URL.Hostname()
+				if _, ok := trustedRedirects[redirectHost]; ok {
+					if auth.username != "" && auth.password != "" {
+						req.SetBasicAuth(auth.username, auth.password)
+					}
+					return nil
+				} else {
+					log.Printf("Redirect to '%s' not trusted", redirectHost)
+					return http.ErrUseLastResponse
+				}
+			},
+		},
 		url,
 		auth,
+		trustedRedirects,
 	}
 }
 
@@ -60,6 +84,7 @@ func main() {
 	exportedTaskLabels := fs.String("exportedTaskLabels", "", "Comma-separated list of task labels to include in the task_labels metric")
 	ignoreCompletedFrameworkTasks := fs.Bool("ignoreCompletedFrameworkTasks", false, "Don't export task_state_time metric");
 	trustedCerts := fs.String("trustedCerts", "", "Comma-separated list of certificates (.pem files) trusted for requests to Mesos endpoints")
+	trustedRedirects := fs.String("trustedRedirects", "", "Comma-separated list of trusted hosts (ip addresses, host names) where metrics requests can be redirected")
 
 	fs.Parse(os.Args[1:])
 	if *masterURL != "" && *slaveURL != "" {
@@ -76,6 +101,11 @@ func main() {
 		certPool = getX509CertPool(strings.Split(*trustedCerts, ","))
 	}
 
+	var trustedRedirectsMap map[string]bool = nil
+	if *trustedRedirects != "" {
+		trustedRedirectsMap = getTrustedRedirectsMap(strings.Split(*trustedRedirects, ","))
+	}
+
 	switch {
 	case *masterURL != "":
 		for _, f := range []func(*httpClient) prometheus.Collector{
@@ -84,7 +114,7 @@ func main() {
 				return newMasterStateCollector(c, *ignoreCompletedFrameworkTasks)
 			},
 		} {
-			c := f(mkHttpClient(*masterURL, *timeout, auth, certPool));
+			c := f(mkHttpClient(*masterURL, *timeout, auth, certPool, trustedRedirectsMap));
 			if err := prometheus.Register(c); err != nil {
 				log.Fatal(err)
 			}
@@ -108,7 +138,7 @@ func main() {
 		}
 
 		for _, f := range slaveCollectors {
-			c := f(mkHttpClient(*slaveURL, *timeout, auth, certPool));
+			c := f(mkHttpClient(*slaveURL, *timeout, auth, certPool, trustedRedirectsMap));
 			if err := prometheus.Register(c); err != nil {
 				log.Fatal(err)
 			}

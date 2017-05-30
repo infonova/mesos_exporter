@@ -134,6 +134,7 @@ type httpClient struct {
 	http.Client
 	url  string
 	auth authInfo
+	trustedRedirects map[string]bool
 }
 
 type metricCollector struct {
