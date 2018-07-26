@@ -17,9 +17,13 @@ type (
 	}
 
 	framework struct {
-		Active    bool   `json:"active"`
-		Tasks     []task `json:"tasks"`
-		Completed []task `json:"completed_tasks"`
+		ID        string    `json:"id"`
+		Name      string    `json:"name"`
+		Webui     string    `json:"webui_url"`
+		Active    bool      `json:"active"`
+		Tasks     []task    `json:"tasks"`
+		Completed []task    `json:"completed_tasks"`
+		Used      resources `json:"used_resources"`
 	}
 
 	state struct {
@@ -35,6 +39,8 @@ type (
 
 func newMasterStateCollector(httpClient *httpClient, ignoreFrameworkTasks bool) prometheus.Collector {
 	labels := []string{"slave"}
+	framework_labels := []string{"id", "name", "webui"}
+
 	metrics := map[prometheus.Collector]func(*state, prometheus.Collector){
 		prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Help:      "Total slave CPUs (fractional)",
@@ -157,6 +163,54 @@ func newMasterStateCollector(httpClient *httpClient, ignoreFrameworkTasks bool) 
 			for _, s := range st.Slaves {
 				size := s.Unreserved.Ports.size()
 				c.(*prometheus.GaugeVec).WithLabelValues(s.PID).Set(float64(size))
+			}
+		},
+		prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Help:      "Framework CPU usage",
+			Namespace: "mesos",
+			Subsystem: "framework",
+			Name:      "cpus_used",
+		}, framework_labels): func(st *state, c prometheus.Collector) {
+			for _, f := range st.Frameworks {
+				values := []string{
+					f.ID,
+					f.Name,
+					f.Webui,
+				}
+
+				c.(*prometheus.GaugeVec).WithLabelValues(values...).Set(f.Used.CPUs)
+			}
+		},
+		prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Help:      "Framework memory usage in bytes",
+			Namespace: "mesos",
+			Subsystem: "framework",
+			Name:      "mem_used_bytes",
+		}, framework_labels): func(st *state, c prometheus.Collector) {
+			for _, f := range st.Frameworks {
+				values := []string{
+					f.ID,
+					f.Name,
+					f.Webui,
+				}
+
+				c.(*prometheus.GaugeVec).WithLabelValues(values...).Set(f.Used.Mem)
+			}
+		},
+		prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Help:      "Framework disk usage in bytes",
+			Namespace: "mesos",
+			Subsystem: "framework",
+			Name:      "disk_used_bytes",
+		}, framework_labels): func(st *state, c prometheus.Collector) {
+			for _, f := range st.Frameworks {
+				values := []string{
+					f.ID,
+					f.Name,
+					f.Webui,
+				}
+
+				c.(*prometheus.GaugeVec).WithLabelValues(values...).Set(f.Used.Disk)
 			}
 		},
 	}
